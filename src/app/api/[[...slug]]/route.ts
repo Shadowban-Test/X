@@ -8,7 +8,7 @@ import {
   XClientTransactionIdResponseSchema,
 } from "./schemas";
 import ky from "ky";
-import { ClientTransaction, handleXMigration } from "x-client-transaction-id";
+import { ClientTransaction, fetchXDocument } from "x-client-transaction-id";
 
 function generateRandomHexString(length: number) {
   let result = "";
@@ -65,7 +65,7 @@ app.openapi(
   }),
   async (c) => {
     const { method, path } = c.req.valid("query");
-    const response = await handleXMigration();
+    const response = await fetchXDocument();
     const ct = await ClientTransaction.create(response);
     const xClientTransactionId = await ct.generateTransactionId(method, path);
     return c.json(
@@ -101,7 +101,7 @@ const route = app.openapi(
       throw new Error("AUTH_TOKEN is not defined");
     }
     const csrfToken = generateRandomHexString(16);
-    const response = await handleXMigration();
+    const response = await fetchXDocument();
     const ct = await ClientTransaction.create(response);
     const client = ky.create({
       prefixUrl: "https://api.twitter.com",
